@@ -91,6 +91,16 @@ function main(): void {
   if (readFileSync(outPath, "utf8") !== TEXT) {
     throw new Error("entry.txt does not match the validated entry text");
   }
+  // Byte-level check as well: the file must hold exactly the entry's
+  // UTF-8 bytes, with no trailing newline byte smuggled in by the
+  // platform's write path.
+  const bytes = readFileSync(outPath);
+  if (bytes.length !== Buffer.byteLength(TEXT, "utf8")) {
+    throw new Error("entry.txt byte length does not match the validated entry text");
+  }
+  if (bytes.length > 0 && bytes[bytes.length - 1] === 0x0a) {
+    throw new Error("entry.txt must not end with a newline");
+  }
 }
 
 main();
